@@ -1,1 +1,1 @@
-export const API_URL = process.env.DEVELOPMENT_URL;
+export const API_URL = process.env.EXPO_PUBLIC_DEVELOPMENT_URL;

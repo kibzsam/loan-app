@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 export const LOANS_PRODUCTS = gql`
-  query {
+  query LoanProducts {
     loanProducts {
       id
       name
