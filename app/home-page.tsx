@@ -9,10 +9,12 @@ import LoanCard from "@/components/LoanCard";
 import { useQuery } from "@apollo/client";
 import { LOANS_PRODUCTS } from "@/services/loanService";
 import { Link } from "expo-router";
+import { useState } from "react";
 
 export default function HomeScreen() {
   const { loading, error, data } = useQuery(LOANS_PRODUCTS);
   const loanProductsData = data?.loanProducts;
+  const [activeCardId, setActiveCardId] = useState(0);
   return (
     <View className="h-screen w-screen px-6 pt-24 relative">
       <View className="flex flex-col">
@@ -24,12 +26,17 @@ export default function HomeScreen() {
           {error ? <Text>Error! {error.message}</Text> : null}
           {loanProductsData && loanProductsData.length > 0
             ? loanProductsData.map((loan: any, index: number) => {
+                const active = activeCardId === index;
                 return (
                   <LoanCard
                     key={index}
                     loan_name={loan?.name}
                     maximum_amount={loan?.maximumAmount}
                     interest={loan?.interestRate}
+                    isActive={active}
+                    onClick={() => {
+                      setActiveCardId(index);
+                    }}
                   />
                 );
               })

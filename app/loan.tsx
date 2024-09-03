@@ -2,6 +2,7 @@ import {
   View,
   Text,
   Pressable,
+  ToastAndroid,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
@@ -9,6 +10,10 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, SubmitHandler, Form, Controller } from "react-hook-form";
 import { Input } from "@/components/Input";
+import { useQuery } from "@apollo/client";
+import { applyLoan } from "@/services/loanService";
+import { useState } from "react";
+import { isLoaded } from "expo-font";
 
 interface IFormInput {
   fullName: String;
@@ -17,12 +22,16 @@ interface IFormInput {
   loanPurpose: String;
 }
 export default function ApplyLoan() {
+  const [loading, setLoading] = useState(false);
   const schema: any = yup.object().shape({
     fullName: yup.string().required("Full Name is required"),
     email: yup.string().required("Email is required"),
     loanAmount: yup.number().positive().required("Loan amount is required"),
     loanPurpose: yup.string().required("Loan purpose is required"),
   });
+  function showToast({ message }: { message: string }) {
+    ToastAndroid.show(`${message}`, ToastAndroid.SHORT);
+  }
   const {
     control,
     handleSubmit,
@@ -38,7 +47,24 @@ export default function ApplyLoan() {
     },
   });
   const onSubmit = (data: any) => {
-    console.log("DATA", data);
+    setLoading(true);
+    applyLoan({
+      data: {
+        full_name: data?.fullName,
+        email: data?.email,
+        loan_amount: parseInt(data?.loanAmount),
+        loan_purpose: data?.loanPurpose,
+      },
+    })
+      .then((response) => {
+        const message = response.data;
+        setLoading(false);
+        showToast({ message: message["message"] });
+      })
+      .catch((e) => {
+        setLoading(false);
+        showToast({ message: e?.message });
+      });
   };
   return (
     <View className="h-screen w-screen px-6 pt-24 relative">
@@ -138,9 +164,10 @@ export default function ApplyLoan() {
           className="flex flex-row items-center justify-center rounded-3xl bg-[#30C2E3] h-[3.5rem]"
           onPress={handleSubmit(onSubmit)}
         >
-          <Text className="font-roboto text-base font-bold text-white">
+          <Text className="font-roboto text-base font-bold text-white mr-4">
             SUBMIT
           </Text>
+          {loading ? <ActivityIndicator color="#ffffff" /> : null}
         </Pressable>
       </View>
     </View>
